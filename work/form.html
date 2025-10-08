@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cổng hỗ trợ — DHTan</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <div class="card">
+      <h1>Cổng hỗ trợ</h1>
+      <p class="sub">Trang trung gian (no-backend) để chuyển hướng tới biểu mẫu hoặc tài nguyên do bạn quản lý trên Google.</p>
+
+      <label for="agent">Mã (tuỳ chọn)</label>
+      <input id="agent" type="text" placeholder="VD: HCM6-1234 hoặc để trống" />
+
+      <label for="dest">Chọn điểm đến</label>
+      <select id="dest">
+        <option value="form">Biểu mẫu đăng ký</option>
+        <option value="sheet">Trang tổng quan (Google Sheet / Data Studio)</option>
+        <option value="custom">Link tuỳ chỉnh</option>
+      </select>
+
+      <label for="customUrl" style="display:none" id="customLabel">Nhập URL tuỳ chỉnh</label>
+      <input id="customUrl" type="text" style="display:none" placeholder="https://..." />
+
+      <div class="buttons" style="margin-top:12px">
+        <button id="go" class="btn">Đi tới</button>
+        <a href="/work/thanks.html" class="btn ghost">Trang cảm ơn</a>
+        <a href="/" class="btn ghost">Trang chủ</a>
+      </div>
+
+      <div class="notice" id="preview" style="display:none"></div>
+      <p class="small warn">Lưu ý bảo mật: Dữ liệu chỉ được nhập/lưu tại Google Forms/Sheets. Trang này không thu thập hay lưu trữ bất kỳ dữ liệu nào.</p>
+    </div>
+  </main>
+
+<script>
+/* Cấu hình đích đến — THAY THẾ các URL bên dưới cho phù hợp */
+const URLS = {
+  form: "https://docs.google.com/forms/d/e/FORM_ID/viewform",  // TODO: thay FORM_ID
+  sheet: "https://docs.google.com/spreadsheets/d/SHEET_ID/view" // TODO: thay SHEET_ID
+};
+
+const agentEl = document.getElementById('agent');
+const destEl = document.getElementById('dest');
+const customEl = document.getElementById('customUrl');
+const customLabel = document.getElementById('customLabel');
+const preview = document.getElementById('preview');
+
+destEl.addEventListener('change', () => {
+  const useCustom = destEl.value === 'custom';
+  customEl.style.display = useCustom ? 'block' : 'none';
+  customLabel.style.display = useCustom ? 'block' : 'none';
+  updatePreview();
+});
+
+[agentEl, customEl].forEach(el => el.addEventListener('input', updatePreview));
+
+function buildUrl(){
+  const agent = agentEl.value.trim();
+  let base = "";
+  if(destEl.value === 'custom'){
+    base = (customEl.value || "").trim();
+  } else {
+    base = URLS[destEl.value];
+  }
+  if(!base) return "";
+  try {
+    const u = new URL(base);
+    if(agent){
+      // Gắn thêm query param ?agent=... (chỉ chuyển tiếp — Google Form cần xử lý prefill riêng)
+      u.searchParams.set('agent', agent);
+    }
+    return u.toString();
+  } catch(e){
+    return "";
+  }
+}
+
+function updatePreview(){
+  const url = buildUrl();
+  if(url){
+    preview.style.display = 'block';
+    preview.innerHTML = "Sẽ chuyển tới: <strong>"+url+"</strong>";
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+document.getElementById('go').addEventListener('click', () => {
+  const url = buildUrl();
+  if(!url){ alert("Chưa cấu hình URL đích hoặc URL không hợp lệ."); return; }
+  window.location.href = url;
+});
+
+// Khởi tạo
+updatePreview();
+</script>
+</body>
+</html>
