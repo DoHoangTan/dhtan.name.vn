@@ -19,19 +19,23 @@
 
       <label for="dest">Chọn tên quản lý</label>
       <select id="dest">
-        <option value="form">Biểu mẫu</option>
-        <option value="sheet">(Google Sheet)</option>
-        <option value="https://docs.google.com/spreadsheets/d/12Cc0eYFuvIlEF2JF6m-z8mHMyidBDO_AcFr25eB8Bvg/edit?usp=sharing">DRD LINH LÊ(Google Sheet)</option>
-        <option value="https://docs.google.com/spreadsheets/d/1P45nrS_-PHocZt6Sazwlj5X5jJmHzRnVMe89Lzv6wOA/edit?usp=sharing">TAN DO(Google Sheet)</option>
-        <option value="https://docs.google.com/spreadsheets/d/12Cc0eYFuvIlEF2JF6m-z8mHMyidBDO_AcFr25eB8Bvg/edit?usp=sharing">TAN.NT(Google Sheet)</option>
-        <option value="sheet">23127(Google Sheet)</option>
-        <option value="sheet">23127(Google Sheet)</option>
-        <option value="sheet">23127(Google Sheet)</option>
-        <option value="sheet">23127(Google Sheet)</option>
-        <option value="sheet">23127(Google Sheet)</option>
-        <option value="sheet">23127(Google Sheet)</option>
-        <option value="sheet">23127(Google Sheet)</option>
-        <option value="sheet">Trang tổng quan (Google Sheet / Data Studio)</option>
+        <option value="form">(Google Sheet)</option>
+        <option value="sheetDRD">DRD LINH LÊ</option>
+        <option value="sheetTANDO">TAN DO</option>
+        <option value="sheetHANGNGUYEN">NGUYỄN THỊ THÚY HẰNG</option>
+        <option value="sheetHANGO">NGÔ THỊ HÀ</option>
+        <option value="sheetHUYTRAN">TRẦN TRIỆU HUY</option>
+        <option value="sheetLEQUYEN">DƯƠNG THỊ LỆ QUYÊN</option>
+        <option value="sheetHUYENVO">VÕ THỊ THANH HUYỀNH</option>
+        <option value="sheetTHANHHA">TRƯƠNG THỊ THANH HÀ</option>
+        <option value="sheetTHUHOAI">LÊ THỊ THU HOÀI</option>
+        <option value="sheetTHUYNGUYEN">NGUYỄN THỊ THÚY HẰNG</option>
+        <option value="sheetVINHPHAT">LÝ VINH PHÁT</option>
+        <option value="sheetLANHNGUYEN">NGUYỄN THỊ LÀNH</option>        
+        <option value="sheetCAMNHUNG">ĐỒNG THỊ CẨM NHUNG</option>
+        <option value="sheetTOANNGUYEN">NGUYỄN NGỌC TOÀN</option>
+        <option value="sheetANHMAI">LƯƠNG THỊ ÁNH MAI</option>
+        <option value="sheetLYKHANHTIEN">LÉ KHÁNH TIẾN</option>
         <option value="custom">Link tuỳ chỉnh</option>
       </select>
 
@@ -52,8 +56,24 @@
 <script>
 /* Cấu hình đích đến — THAY THẾ các URL bên dưới cho phù hợp */
 const URLS = {
-  form: "https://docs.google.com/forms/d/e/FORM_ID/viewform",  // TODO: thay FORM_ID
-  sheet: "https://docs.google.com/spreadsheets/d/SHEET_ID/view" // TODO: thay SHEET_ID
+ /* form: "https://docs.google.com/forms/d/e/FORM_ID/viewform",  // TODO: thay FORM_ID  */
+  sheetDRD: "https://docs.google.com/spreadsheets/d/16VuzNeiuHM3D4jmy_OSdACRNG1HKDe2VWeBbv63qB0Y/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetTANDO: "https://docs.google.com/spreadsheets/d/1P45nrS_-PHocZt6Sazwlj5X5jJmHzRnVMe89Lzv6wOA/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetHANGNGUYEN: "https://docs.google.com/spreadsheets/d/12Cc0eYFuvIlEF2JF6m-z8mHMyidBDO_AcFr25eB8Bvg/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetHANGO: "https://docs.google.com/spreadsheets/d/1__Aon0C1tj43UU8RTvyU4jhW8Ld0Uv3G52672qhvMXw/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetHUYTRAN: "https://docs.google.com/spreadsheets/d/1QWfoCERUcozM2m4I6MkTqnDTym4Q4tURCQhlfiLaBj0/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetLEQUYEN: "https://docs.google.com/spreadsheets/d/1y08Wd1dg_TcCr0soH3jGz8oeDACso0mCgJ5nPkcCz54/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetHUYENVO: "https://docs.google.com/spreadsheets/d/1HEczPa9_JgWoebxmm0OoocKvvtYV56M8twn3Nq1_uc0/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetTHANHHA: "https://docs.google.com/spreadsheets/d/1WOtvFd8EM6ZodgSqBcN2Q10YvDc6iGIRzQq_Rlwzg-4/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetTHUHOAI: "https://docs.google.com/spreadsheets/d/1R6VGKaglGy5s7g6aR9elhgxDXSXknW6-2Vr3jQpDuqM/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetTHUYNGUYEN: "https://docs.google.com/spreadsheets/d/1Jzo54ZAwLE45ZQrKDCRQGsSuz3jRQdy-bTtTz3G-Bf8/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetVINHPHAT: "https://docs.google.com/spreadsheets/d/1iv1LptCD0hWr_VyiGpk9CQkQEwvlG5b7-xYVduAsupk/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetLANHNGUYEN: "https://docs.google.com/spreadsheets/d/1hSCIPo_F4CuYIG_fo35SpgrZE5DXky2T3gqhuo3YZuM/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetCAMNHUNG: "https://docs.google.com/spreadsheets/d/1wj2nzPV_Rx7ufjYWLuo9FCTtA9mCIsSAF_FERYBbOV0/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetTOANNGUYEN: "https://docs.google.com/spreadsheets/d/1ALA-0c2DeOyL4gODdnePx7zCe8PzzQ5fGPfQ6u32ZEU/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetANHMAI: "https://docs.google.com/spreadsheets/d/1-JBbAVAbgfN267SY2QoInt5IVT86aai8qUkiMw6OX3c/edit?usp=sharing" // TODO: thay SHEET_ID
+  sheetLYKHANHTIEN: "https://docs.google.com/spreadsheets/d/1pagcOPcmiPh7FyAYpe6uyuv0W8C9qIgLH6w2BMT_7F4/edit?usp=sharing" // TODO: thay SHEET_ID
+ 
 };
 
 const agentEl = document.getElementById('agent');
