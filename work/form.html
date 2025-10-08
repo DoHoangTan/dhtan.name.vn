@@ -12,11 +12,7 @@
   <main class="wrap">
     <div class="card">
       <h1>Cổng hỗ trợ</h1>
-
-
-      <label for="agent">Mã (tuỳ chọn)</label>
-      <input id="agent" type="text" placeholder="VD: HCM6-1234 hoặc để trống" />
-      
+     
       <p class="sub">Trang chuyển hướng tới SheetS Google.</p>
       
       <label for="dest">Chọn tên quản lý</label>
@@ -78,7 +74,7 @@ const URLS = {
  
 };
 
-const agentEl = document.getElementById('agent');
+
 const destEl = document.getElementById('dest');
 const customEl = document.getElementById('customUrl');
 const customLabel = document.getElementById('customLabel');
@@ -91,10 +87,10 @@ destEl.addEventListener('change', () => {
   updatePreview();
 });
 
-[agentEl, customEl].forEach(el => el.addEventListener('input', updatePreview));
+
 
 function buildUrl(){
-  const agent = agentEl.value.trim();
+
   let base = "";
   if(destEl.value === 'custom'){
     base = (customEl.value || "").trim();
@@ -104,10 +100,7 @@ function buildUrl(){
   if(!base) return "";
   try {
     const u = new URL(base);
-    if(agent){
-      // Gắn thêm query param ?agent=... (chỉ chuyển tiếp — Google Form cần xử lý prefill riêng)
-      u.searchParams.set('agent', agent);
-    }
+    
     return u.toString();
   } catch(e){
     return "";
