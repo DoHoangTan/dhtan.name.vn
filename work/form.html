@@ -17,41 +17,6 @@
       <label for="agent">Mã (tuỳ chọn)</label>
       <input id="agent" type="text" placeholder="VD: HCM6-1234 hoặc để trống" />
 
-      <label for="dest">Chọn tên quản lý</label>
-      <select id="dest">
-        <option value="form">(Google Sheet)</option>
-        <option value="sheetDRD">DRD LINH LÊ</option>
-        <option value="sheetTANDO">TAN DO</option>
-        <option value="sheetHANGNGUYEN">NGUYỄN THỊ THÚY HẰNG</option>
-        <option value="sheetHANGO">NGÔ THỊ HÀ</option>
-        <option value="sheetHUYTRAN">TRẦN TRIỆU HUY</option>
-        <option value="sheetLEQUYEN">DƯƠNG THỊ LỆ QUYÊN</option>
-        <option value="sheetHUYENVO">VÕ THỊ THANH HUYỀNH</option>
-        <option value="sheetTHANHHA">TRƯƠNG THỊ THANH HÀ</option>
-        <option value="sheetTHUHOAI">LÊ THỊ THU HOÀI</option>
-        <option value="sheetTHUYNGUYEN">NGUYỄN THỊ THÚY HẰNG</option>
-        <option value="sheetVINHPHAT">LÝ VINH PHÁT</option>
-        <option value="sheetLANHNGUYEN">NGUYỄN THỊ LÀNH</option>        
-        <option value="sheetCAMNHUNG">ĐỒNG THỊ CẨM NHUNG</option>
-        <option value="sheetTOANNGUYEN">NGUYỄN NGỌC TOÀN</option>
-        <option value="sheetANHMAI">LƯƠNG THỊ ÁNH MAI</option>
-        <option value="sheetLYKHANHTIEN">LÉ KHÁNH TIẾN</option>
-        <option value="custom">Link tuỳ chỉnh</option>
-      </select>
-
-      <label for="customUrl" style="display:none" id="customLabel">Nhập URL tuỳ chỉnh</label>
-      <input id="customUrl" type="text" style="display:none" placeholder="https://..." />
-
-      <div class="buttons" style="margin-top:12px">
-        <button id="go" class="btn">Đi tới</button>
-        <a href="/work/thanks.html" class="btn ghost">Trang cảm ơn</a>
-        <a href="/" class="btn ghost">Trang chủ</a>
-      </div>
-
-      <div class="notice" id="preview" style="display:none"></div>
-      <p class="small warn">Lưu ý bảo mật: Trang này không thu thập hay lưu trữ bất kỳ dữ liệu nào.</p>
-    </div>
-  </main>
 
 <script>
 /* Cấu hình đích đến — THAY THẾ các URL bên dưới cho phù hợp */
@@ -131,5 +96,43 @@ document.getElementById('go').addEventListener('click', () => {
 // Khởi tạo
 updatePreview();
 </script>
+
+      
+      <label for="dest">Chọn tên quản lý</label>
+      <select id="dest">
+        <option value="form">(Google Sheet)</option>
+        <option value="sheetDRD">DRD LINH LÊ</option>
+        <option value="sheetTANDO">TAN DO</option>
+        <option value="sheetHANGNGUYEN">NGUYỄN THỊ THÚY HẰNG</option>
+        <option value="sheetHANGO">NGÔ THỊ HÀ</option>
+        <option value="sheetHUYTRAN">TRẦN TRIỆU HUY</option>
+        <option value="sheetLEQUYEN">DƯƠNG THỊ LỆ QUYÊN</option>
+        <option value="sheetHUYENVO">VÕ THỊ THANH HUYỀNH</option>
+        <option value="sheetTHANHHA">TRƯƠNG THỊ THANH HÀ</option>
+        <option value="sheetTHUHOAI">LÊ THỊ THU HOÀI</option>
+        <option value="sheetTHUYNGUYEN">NGUYỄN THỊ THÚY HẰNG</option>
+        <option value="sheetVINHPHAT">LÝ VINH PHÁT</option>
+        <option value="sheetLANHNGUYEN">NGUYỄN THỊ LÀNH</option>        
+        <option value="sheetCAMNHUNG">ĐỒNG THỊ CẨM NHUNG</option>
+        <option value="sheetTOANNGUYEN">NGUYỄN NGỌC TOÀN</option>
+        <option value="sheetANHMAI">LƯƠNG THỊ ÁNH MAI</option>
+        <option value="sheetLYKHANHTIEN">LÉ KHÁNH TIẾN</option>
+        <option value="custom">Link tuỳ chỉnh</option>
+      </select>
+
+      <label for="customUrl" style="display:none" id="customLabel">Nhập URL tuỳ chỉnh</label>
+      <input id="customUrl" type="text" style="display:none" placeholder="https://..." />
+
+      <div class="buttons" style="margin-top:12px">
+        <button id="go" class="btn">Đi tới</button>
+        <a href="/work/thanks.html" class="btn ghost">Trang cảm ơn</a>
+        <a href="/" class="btn ghost">Trang chủ</a>
+      </div>
+
+      <div class="notice" id="preview" style="display:none"></div>
+      <p class="small warn">Lưu ý bảo mật: Trang này không thu thập hay lưu trữ bất kỳ dữ liệu nào.</p>
+    </div>
+  </main>
+
 </body>
 </html>
