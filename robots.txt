@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /work/
+Allow: /
+
+Sitemap: https://dhtan.name.vn/sitemap.xml
