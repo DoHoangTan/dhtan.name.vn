@@ -1,1 +1,764 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giải Pháp Tối Ưu Vận Hành BPO MB - Interactive Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Corporate Professional 
+         Background: Slate-50 (Neutral Light)
+         Primary: Blue-800 (Trust/Corporate)
+         Secondary: Emerald-600 (Growth/Solution)
+         Accent: Rose-500 (Alerts/Issues)
+         Text: Slate-800 (Readability)
+    -->
 
+    <!-- Application Structure Plan: 
+         1. Sidebar Navigation: Persistent access to 5 key modules (Overview, Current State, Diagnosis, Solutions, Conclusion).
+         2. Module 1: Overview : Executive summary cards, Context, and Theory Framework interactively presented.
+         3. Module 2: Current State : "AS-IS" Dashboard. Interactive Process Map (HTML/CSS) where clicking steps reveals Pain Points. Charts for SLA Drop and Backlog.
+         4. Module 3: Diagnosis : Interactive "Logic Chain" table (Problem -> Cause -> Solution).
+         5. Module 4: Solutions : Tabbed interface demonstrating the 4 core solutions (Automation, SOP, Dashboard, Training) with mini-simulations.
+         6. Module 5: Conclusion : Summary and key takeaways.
+         Rationale: This structure transforms the linear thesis into a "Problem-Solving Journey" suitable for stakeholders to grasp the value proposition quickly.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. SLA Trend (Line Chart): Shows the drop from 82% to 77%. Goal: Inform urgency. Library: Chart.js.
+         2. Backlog vs Capacity (Bar Chart): Shows increasing backlog. Goal: Visualize "Overload". Library: Chart.js.
+         3. Process Map (HTML/Flexbox): Visualizes Manual Flow. Goal: Highlight bottlenecks. Interaction: Click step to see "Pain Point". No SVG/Mermaid.
+         4. Logic Chain Matrix (Interactive Table): Connects Ch 3, 5, 4. Goal: Show logical coherence.
+         5. Competency Matrix (Scatter Plot): Shows Productivity vs Quality. Goal: Justify Training solution. Library: Chart.js.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { 
+            position: relative; 
+            width: 100%; 
+            height: 300px; 
+            max-height: 400px;
+        }
+        .step-card { transition: all 0.3s ease; cursor: pointer; }
+        .step-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .step-active { border-color: #ef4444; background-color: #fef2f2; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .tab-btn.active { border-bottom: 2px solid #0f172a; color: #0f172a; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen overflow-hidden flex">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-slate-900 text-white flex-shrink-0 flex flex-col shadow-xl z-20 hidden md:flex">
+        <div class="p-6 border-b border-slate-700">
+            <h1 class="text-xl font-bold leading-tight">BPO MB<br><span class="text-emerald-400 text-sm font-normal">Optimization Project</span></h1>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li><button onclick="navTo('overview')" class="nav-item w-full text-left px-6 py-3 hover:bg-slate-800 flex items-center gap-3 border-l-4 border-transparent transition-all" id="nav-overview"><span>📊</span> Tổng Quan (Ch 1-2)</button></li>
+                <li><button onclick="navTo('status')" class="nav-item w-full text-left px-6 py-3 hover:bg-slate-800 flex items-center gap-3 border-l-4 border-transparent transition-all" id="nav-status"><span>⚠️</span> Thực Trạng (Ch 3)</button></li>
+                <li><button onclick="navTo('diagnosis')" class="nav-item w-full text-left px-6 py-3 hover:bg-slate-800 flex items-center gap-3 border-l-4 border-transparent transition-all" id="nav-diagnosis"><span>🔍</span> Phân Tích (Ch 5-6)</button></li>
+                <li><button onclick="navTo('solutions')" class="nav-item w-full text-left px-6 py-3 hover:bg-slate-800 flex items-center gap-3 border-l-4 border-transparent transition-all" id="nav-solutions"><span>🚀</span> Giải Pháp (Ch 4)</button></li>
+                <li><button onclick="navTo('conclusion')" class="nav-item w-full text-left px-6 py-3 hover:bg-slate-800 flex items-center gap-3 border-l-4 border-transparent transition-all" id="nav-conclusion"><span>🏁</span> Kết Luận (Ch 7)</button></li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t border-slate-700 text-xs text-slate-400">
+            Thesis Project V1.0<br>
+            Case: BPO MB Service JSC
+        </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed top-0 w-full bg-slate-900 text-white z-50 p-4 flex justify-between items-center shadow-md">
+        <span class="font-bold">BPO MB Project</span>
+        <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="text-2xl">≡</button>
+    </div>
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden fixed top-14 left-0 w-full bg-slate-800 text-white z-40 p-4 shadow-lg md:hidden">
+        <button onclick="navTo('overview')" class="block w-full text-left py-2 border-b border-slate-700">Tổng Quan</button>
+        <button onclick="navTo('status')" class="block w-full text-left py-2 border-b border-slate-700">Thực Trạng</button>
+        <button onclick="navTo('diagnosis')" class="block w-full text-left py-2 border-b border-slate-700">Phân Tích</button>
+        <button onclick="navTo('solutions')" class="block w-full text-left py-2 border-b border-slate-700">Giải Pháp</button>
+        <button onclick="navTo('conclusion')" class="block w-full text-left py-2">Kết Luận</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-8 pt-20 md:pt-8 bg-slate-50 relative">
+        
+        <!-- SECTION 1: OVERVIEW -->
+        <section id="overview" class="view-section space-y-8 animate-fade-in">
+            <header class="mb-8">
+                <div class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold mb-2">Đề Tài Luận Văn Thạc Sĩ / Tốt Nghiệp</div>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Giải Pháp Nâng Cao Hiệu Quả Vận Hành BPO</h2>
+                <p class="text-lg text-slate-600 mt-2">Trường hợp điển hình: Công ty Cổ phần Dịch vụ BPO MB (SME)</p>
+            </header>
+
+            <!-- Context Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="text-4xl mb-3">📈</div>
+                    <h3 class="font-bold text-lg mb-2">Bối Cảnh (Context)</h3>
+                    <p class="text-sm text-slate-600">Nhu cầu BPO tăng cao, nhưng các doanh nghiệp SME tại VN đang mắc kẹt trong "bẫy năng suất": Quy trình thủ công & Công cụ rời rạc.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="text-4xl mb-3">🎯</div>
+                    <h3 class="font-bold text-lg mb-2">Mục Tiêu (Goals)</h3>
+                    <ul class="text-sm text-slate-600 list-disc list-inside space-y-1">
+                        <li>Chuẩn hóa SOP (Giảm lỗi)</li>
+                        <li>Kiểm soát SLA (Automation)</li>
+                        <li>Tối ưu nhân sự (Data-driven)</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="text-4xl mb-3">🔬</div>
+                    <h3 class="font-bold text-lg mb-2">Phạm Vi (Scope)</h3>
+                    <p class="text-sm text-slate-600">
+                        <strong>Đối tượng:</strong> BPO MB (50-100 NV)<br>
+                        <strong>Dữ liệu:</strong> 6 tháng đầu năm 2024<br>
+                        <strong>Tâm điểm:</strong> SLA, Productivity, Quality.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Theory Framework -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-6">
+                <h3 class="font-bold text-xl mb-4 border-b pb-2">Cơ Sở Lý Thuyết (Theoretical Framework)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-blue-800">1. Lean Thinking</h4>
+                        <p class="text-xs text-slate-500 italic">Womack & Jones (1996)</p>
+                        <p class="text-sm mt-2">Loại bỏ 7 loại lãng phí (Muda). Tập trung xử lý "Waiting" (Chờ đợi) và "Defects" (Lỗi làm lại).</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-blue-800">2. SERVQUAL</h4>
+                        <p class="text-xs text-slate-500 italic">Parasuraman et al. (1988)</p>
+                        <p class="text-sm mt-2">Tập trung vào khía cạnh <strong>"Responsiveness"</strong> (Sự đáp ứng) để cải thiện điểm hài lòng và SLA.</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-blue-800">3. BPR (Tái cấu trúc)</h4>
+                        <p class="text-xs text-slate-500 italic">Hammer & Champy (1993)</p>
+                        <p class="text-sm mt-2">Chuyển từ cải tiến nhỏ giọt sang <strong>"Số hóa quy trình"</strong> bằng Dashboard thời gian thực.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end">
+                <button onclick="navTo('status')" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Khám Phá Thực Trạng →</button>
+            </div>
+        </section>
+
+        <!-- SECTION 2: CURRENT STATUS (AS-IS) -->
+        <section id="status" class="view-section hidden space-y-6">
+            <header>
+                <h2 class="text-3xl font-bold text-slate-900">Thực Trạng Vận Hành (AS-IS)</h2>
+                <p class="text-slate-600">Phân tích dữ liệu 6 tháng đầu năm 2024 và quy trình hiện tại.</p>
+            </header>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                    <div class="text-sm text-red-600 font-medium">SLA Trend</div>
+                    <div class="text-2xl font-bold text-red-800">82% <span class="text-sm font-normal text-slate-500">→</span> 77%</div>
+                    <div class="text-xs text-red-500">Giảm liên tục (Jan - Jun)</div>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
+                    <div class="text-sm text-orange-600 font-medium">Error Rate</div>
+                    <div class="text-2xl font-bold text-orange-800">9.35%</div>
+                    <div class="text-xs text-orange-500">Cao hơn chuẩn ngành (5%)</div>
+                </div>
+                <div class="bg-slate-100 p-4 rounded-lg border border-slate-200">
+                    <div class="text-sm text-slate-600 font-medium">Process Type</div>
+                    <div class="text-xl font-bold text-slate-800">Manual</div>
+                    <div class="text-xs text-slate-500">Excel & Zalo based</div>
+                </div>
+                <div class="bg-slate-100 p-4 rounded-lg border border-slate-200">
+                    <div class="text-sm text-slate-600 font-medium">Backlog</div>
+                    <div class="text-xl font-bold text-slate-800">Growing</div>
+                    <div class="text-xs text-slate-500">+15% Month-over-Month</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- CHART 1: SLA Trend -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-lg mb-4">Biểu Đồ Xu Hướng SLA (6 Tháng)</h3>
+                    <div class="chart-container">
+                        <canvas id="slaChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-slate-500 mt-2 italic">Dữ liệu giả lập dựa trên báo cáo thực tế</p>
+                </div>
+
+                <!-- CHART 2: Backlog vs Capacity -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-lg mb-4">Tình Trạng Tồn Đọng (Backlog)</h3>
+                    <div class="chart-container">
+                        <canvas id="backlogChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTERACTIVE PROCESS MAP -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="font-bold text-lg mb-2">Quy Trình Hiện Tại (Pain Point Map)</h3>
+                <p class="text-sm text-slate-500 mb-6">Nhấn vào từng bước để xem vấn đề (Pain Points) tại khâu đó.</p>
+                
+                <div class="flex flex-col md:flex-row gap-4 items-center justify-between relative">
+                    <!-- Step 1 -->
+                    <div onclick="showPainPoint('receive')" class="step-card w-full md:w-1/4 bg-blue-50 border-2 border-blue-200 p-4 rounded-lg text-center relative z-10 group">
+                        <div class="text-2xl mb-2">📧</div>
+                        <h4 class="font-bold text-blue-900">1. Tiếp Nhận</h4>
+                        <p class="text-xs text-blue-700">Email / Hotline</p>
+                        <div class="mt-2 text-xs bg-white py-1 px-2 rounded border border-blue-100 inline-block">Manual Input</div>
+                    </div>
+                    
+                    <!-- Arrow -->
+                    <div class="hidden md:block text-slate-300 text-2xl">➔</div>
+
+                    <!-- Step 2 -->
+                    <div onclick="showPainPoint('triage')" class="step-card w-full md:w-1/4 bg-blue-50 border-2 border-blue-200 p-4 rounded-lg text-center relative z-10">
+                        <div class="text-2xl mb-2">🗂️</div>
+                        <h4 class="font-bold text-blue-900">2. Phân Loại</h4>
+                        <p class="text-xs text-blue-700">Team Leader</p>
+                        <div class="mt-2 text-xs bg-white py-1 px-2 rounded border border-blue-100 inline-block">Excel Tagging</div>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="hidden md:block text-slate-300 text-2xl">➔</div>
+
+                    <!-- Step 3 -->
+                    <div onclick="showPainPoint('process')" class="step-card w-full md:w-1/4 bg-blue-50 border-2 border-blue-200 p-4 rounded-lg text-center relative z-10">
+                        <div class="text-2xl mb-2">⚙️</div>
+                        <h4 class="font-bold text-blue-900">3. Xử Lý</h4>
+                        <p class="text-xs text-blue-700">Agent</p>
+                        <div class="mt-2 text-xs bg-white py-1 px-2 rounded border border-blue-100 inline-block">Check Zalo</div>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="hidden md:block text-slate-300 text-2xl">➔</div>
+
+                    <!-- Step 4 -->
+                    <div onclick="showPainPoint('report')" class="step-card w-full md:w-1/4 bg-blue-50 border-2 border-blue-200 p-4 rounded-lg text-center relative z-10">
+                        <div class="text-2xl mb-2">📊</div>
+                        <h4 class="font-bold text-blue-900">4. Báo Cáo</h4>
+                        <p class="text-xs text-blue-700">Admin</p>
+                        <div class="mt-2 text-xs bg-white py-1 px-2 rounded border border-blue-100 inline-block">End of Day</div>
+                    </div>
+                </div>
+
+                <!-- Pain Point Detail Box -->
+                <div id="pain-point-detail" class="mt-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg hidden animate-fade-in">
+                    <h4 id="pp-title" class="font-bold text-red-800 text-lg">Chi tiết vấn đề</h4>
+                    <p id="pp-desc" class="text-red-700 mt-1"></p>
+                    <div class="mt-2 text-sm text-red-600 font-semibold">Hậu quả: <span id="pp-impact" class="font-normal"></span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: DIAGNOSIS (ROOT CAUSE) -->
+        <section id="diagnosis" class="view-section hidden space-y-6">
+            <header>
+                <h2 class="text-3xl font-bold text-slate-900">Phân Tích Nguyên Nhân & Chuỗi Logic</h2>
+                <p class="text-slate-600">Xâu chuỗi Vấn đề - Nguyên nhân gốc rễ - Giải pháp đề xuất.</p>
+            </header>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                            <tr>
+                                <th class="px-6 py-4">Vấn Đề (Symptom)</th>
+                                <th class="px-6 py-4">Nguyên Nhân (Root Cause)</th>
+                                <th class="px-6 py-4">Giải Pháp (Solution)</th>
+                                <th class="px-6 py-4">Cơ Sở Lý Luận</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b hover:bg-slate-50">
+                                <td class="px-6 py-4 font-bold text-red-600">SLA Giảm (82% -> 77%)</td>
+                                <td class="px-6 py-4">Không có cảnh báo, thông tin bị trôi trên Zalo/Excel.</td>
+                                <td class="px-6 py-4 text-emerald-600 font-semibold">1. Automation & Cảnh báo sớm</td>
+                                <td class="px-6 py-4 italic">SERVQUAL (Đáp ứng)</td>
+                            </tr>
+                            <tr class="border-b hover:bg-slate-50">
+                                <td class="px-6 py-4 font-bold text-orange-600">Tỷ lệ lỗi cao (9.35%)</td>
+                                <td class="px-6 py-4">Làm theo "kinh nghiệm truyền miệng", thiếu Checklist chuẩn.</td>
+                                <td class="px-6 py-4 text-emerald-600 font-semibold">2. Chuẩn hóa SOP & Checklist</td>
+                                <td class="px-6 py-4 italic">Lean Thinking (Defects)</td>
+                            </tr>
+                            <tr class="border-b hover:bg-slate-50">
+                                <td class="px-6 py-4 font-bold text-slate-800">Báo cáo chậm & Backlog</td>
+                                <td class="px-6 py-4">Tổng hợp thủ công, dữ liệu rời rạc, quản lý bị động.</td>
+                                <td class="px-6 py-4 text-emerald-600 font-semibold">3. Real-time Dashboard</td>
+                                <td class="px-6 py-4 italic">BPR / Digital Transformation</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-6 py-4 font-bold text-slate-800">Năng suất chênh lệch</td>
+                                <td class="px-6 py-4">Thiếu kèm cặp, đào tạo đại trà, thiếu Job Aids.</td>
+                                <td class="px-6 py-4 text-emerald-600 font-semibold">4. Đào tạo thực chiến</td>
+                                <td class="px-6 py-4 italic">HR Competency Model</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Competency Chart -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-6">
+                <h3 class="font-bold text-lg mb-4">Phân Tích Năng Lực Nhân Sự (Cơ sở cho Giải pháp 4)</h3>
+                <div class="chart-container">
+                    <canvas id="competencyChart"></canvas>
+                </div>
+                <p class="text-sm text-slate-500 mt-2 text-center">Biểu đồ phân tán thể hiện sự chênh lệch lớn giữa nhóm High Performers (Góc trên phải) và Low Performers.</p>
+            </div>
+        </section>
+
+        <!-- SECTION 4: SOLUTIONS (TO-BE) -->
+        <section id="solutions" class="view-section hidden space-y-6">
+            <header>
+                <h2 class="text-3xl font-bold text-slate-900">Giải Pháp Đề Xuất (TO-BE Model)</h2>
+                <p class="text-slate-600">Mô phỏng các giải pháp tối ưu vận hành.</p>
+            </header>
+
+            <!-- Solution Tabs -->
+            <div class="border-b border-slate-200 flex space-x-6 overflow-x-auto">
+                <button onclick="switchSolTab('sol1')" class="tab-btn active pb-3 text-slate-600 hover:text-blue-600 whitespace-nowrap" id="tab-sol1">1. Automation & Cảnh Báo</button>
+                <button onclick="switchSolTab('sol2')" class="tab-btn pb-3 text-slate-600 hover:text-blue-600 whitespace-nowrap" id="tab-sol2">2. SOP Tinh Gọn</button>
+                <button onclick="switchSolTab('sol3')" class="tab-btn pb-3 text-slate-600 hover:text-blue-600 whitespace-nowrap" id="tab-sol3">3. Dashboard Thời Gian Thực</button>
+                <button onclick="switchSolTab('sol4')" class="tab-btn pb-3 text-slate-600 hover:text-blue-600 whitespace-nowrap" id="tab-sol4">4. Đào Tạo Thực Chiến</button>
+            </div>
+
+            <!-- Content Area for Solutions -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 min-h-[400px]">
+                
+                <!-- Solution 1: Automation -->
+                <div id="sol1" class="sol-content animate-fade-in">
+                    <h3 class="font-bold text-xl text-emerald-700 mb-2">Hệ Thống Phân Luồng Tự Động (Rule-based Engine)</h3>
+                    <p class="text-slate-600 mb-6">Thay thế Team Leader phân loại thủ công. Hệ thống tự động quét từ khóa và gán ticket.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                            <h4 class="font-bold mb-4">Demo: Trình Phân Loại (Simulation)</h4>
+                            <div class="space-y-4">
+                                <input type="text" id="ticket-input" placeholder="Nhập nội dung ticket (VD: Lỗi đăng nhập, Cần hỗ trợ gấp...)" class="w-full p-3 border border-slate-300 rounded focus:outline-none focus:border-blue-500">
+                                <button onclick="simulateTriage()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Phân Loại Ngay</button>
+                                <div id="triage-result" class="hidden p-4 bg-white border border-slate-200 rounded text-center">
+                                    <div class="text-sm text-slate-500">Đã gán cho:</div>
+                                    <div id="assigned-team" class="text-xl font-bold text-slate-800 mt-1">--</div>
+                                    <div id="sla-alert" class="mt-2 text-xs font-semibold px-2 py-1 rounded inline-block"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                            <h4 class="font-bold mb-4">Cơ Chế SLA Trigger</h4>
+                            <ul class="space-y-3 text-sm">
+                                <li class="flex items-center gap-2"><span class="text-emerald-500">✓</span> <strong>Quét 5 phút/lần:</strong> Hệ thống tự động kiểm tra tất cả ticket mở.</li>
+                                <li class="flex items-center gap-2"><span class="text-emerald-500">✓</span> <strong>< 30 Phút:</strong> Gửi cảnh báo Zalo cho Agent.</li>
+                                <li class="flex items-center gap-2"><span class="text-emerald-500">✓</span> <strong>Trễ hạn:</strong> Escalation tự động lên Manager.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solution 2: SOP -->
+                <div id="sol2" class="sol-content hidden animate-fade-in">
+                    <h3 class="font-bold text-xl text-emerald-700 mb-2">SOP Tinh Gọn & Checklist Tích Hợp</h3>
+                    <p class="text-slate-600 mb-6">Chuyển từ tài liệu văn bản dài dòng sang Checklist bắt buộc trên màn hình làm việc.</p>
+
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/2 opacity-50 pointer-events-none grayscale">
+                            <div class="bg-slate-100 p-4 border border-slate-300 h-full rounded">
+                                <h4 class="font-bold text-slate-500 mb-2">CŨ: Tài liệu Word 50 trang</h4>
+                                <p class="text-xs text-justify">...Bước 1: Nhân viên cần kiểm tra thông tin khách hàng trong hệ thống CRM. Nếu khách hàng chưa có, nhân viên phải tạo mới theo biểu mẫu BM01. Sau đó, nhân viên tiến hành xác minh lỗi kỹ thuật bằng cách...</p>
+                                <div class="mt-4 text-center text-red-500 font-bold border-2 border-red-500 p-2 transform -rotate-12">KHÔNG AI ĐỌC</div>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-1/2">
+                            <div class="bg-white p-6 border-2 border-emerald-500 rounded-xl shadow-lg h-full relative">
+                                <div class="absolute -top-3 -right-3 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold">MỚI</div>
+                                <h4 class="font-bold text-emerald-800 mb-4">Interactive Checklist</h4>
+                                <div class="space-y-3">
+                                    <label class="flex items-center gap-3 p-2 bg-slate-50 rounded hover:bg-emerald-50 cursor-pointer">
+                                        <input type="checkbox" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500">
+                                        <span class="text-sm">1. Xác minh ID Khách hàng trên CRM</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-2 bg-slate-50 rounded hover:bg-emerald-50 cursor-pointer">
+                                        <input type="checkbox" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500">
+                                        <span class="text-sm">2. Phân loại mức độ nghiêm trọng (Sev 1-3)</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-2 bg-slate-50 rounded hover:bg-emerald-50 cursor-pointer">
+                                        <input type="checkbox" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500">
+                                        <span class="text-sm">3. Kiểm tra Knowledge Base trước khi hỏi</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-2 bg-slate-50 rounded hover:bg-emerald-50 cursor-pointer">
+                                        <input type="checkbox" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500">
+                                        <span class="text-sm">4. Cập nhật ghi chú xử lý vào Ticket</span>
+                                    </label>
+                                </div>
+                                <button class="mt-6 w-full bg-slate-300 text-slate-500 py-2 rounded cursor-not-allowed" disabled>Hoàn Thành (Chưa đủ bước)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solution 3: Dashboard -->
+                <div id="sol3" class="sol-content hidden animate-fade-in">
+                    <h3 class="font-bold text-xl text-emerald-700 mb-2">Dashboard Vận Hành Thời Gian Thực</h3>
+                    <p class="text-slate-600 mb-6">Màn hình quản trị tập trung, thay thế báo cáo Excel cuối ngày. Hỗ trợ ra quyết định tức thì.</p>
+
+                    <!-- Mini Dashboard Mockup -->
+                    <div class="bg-slate-900 text-white p-6 rounded-xl shadow-2xl">
+                        <div class="flex justify-between items-center mb-6">
+                            <h4 class="font-bold text-lg">Operations Command Center</h4>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                <span class="text-xs text-slate-400">Live Updates</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-slate-800 p-3 rounded border-l-4 border-blue-500">
+                                <div class="text-xs text-slate-400">Incoming</div>
+                                <div class="text-2xl font-bold">42</div>
+                            </div>
+                            <div class="bg-slate-800 p-3 rounded border-l-4 border-yellow-500">
+                                <div class="text-xs text-slate-400">Processing</div>
+                                <div class="text-2xl font-bold">18</div>
+                            </div>
+                            <div class="bg-slate-800 p-3 rounded border-l-4 border-red-500">
+                                <div class="text-xs text-slate-400">At Risk (<30m)</div>
+                                <div class="text-2xl font-bold text-red-400 animate-pulse">3</div>
+                            </div>
+                            <div class="bg-slate-800 p-3 rounded border-l-4 border-green-500">
+                                <div class="text-xs text-slate-400">Resolved Today</div>
+                                <div class="text-2xl font-bold">156</div>
+                            </div>
+                        </div>
+
+                        <div class="h-32 bg-slate-800 rounded flex items-center justify-center text-slate-500 text-sm border border-slate-700 border-dashed">
+                            [Real-time Performance Chart Area]
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solution 4: Training -->
+                <div id="sol4" class="sol-content hidden animate-fade-in">
+                    <h3 class="font-bold text-xl text-emerald-700 mb-2">Khung Năng Lực & Đào Tạo Thực Chiến</h3>
+                    <p class="text-slate-600 mb-6">Phân nhóm nhân sự dựa trên dữ liệu để có chiến lược đào tạo trúng đích.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-white border border-slate-200 p-4 rounded-lg">
+                            <h4 class="font-bold text-slate-800 mb-3">Phân Loại Nhân Sự (Mentorship)</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center p-3 bg-emerald-50 border border-emerald-100 rounded">
+                                    <div class="w-10 h-10 rounded-full bg-emerald-200 flex items-center justify-center text-emerald-800 font-bold mr-3">A</div>
+                                    <div>
+                                        <div class="font-bold text-sm">Nhóm Mentor (High Performer)</div>
+                                        <div class="text-xs text-slate-500">Nhiệm vụ: Kèm cặp 1-1, Xây dựng Knowledge Base.</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center p-3 bg-yellow-50 border border-yellow-100 rounded">
+                                    <div class="w-10 h-10 rounded-full bg-yellow-200 flex items-center justify-center text-yellow-800 font-bold mr-3">B</div>
+                                    <div>
+                                        <div class="font-bold text-sm">Nhóm Cần Đào Tạo (Avg/Low)</div>
+                                        <div class="text-xs text-slate-500">Nhiệm vụ: Học theo Checklist, Thực hành có giám sát.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white border border-slate-200 p-4 rounded-lg">
+                            <h4 class="font-bold text-slate-800 mb-3">Knowledge Base (Kho Tri Thức)</h4>
+                            <p class="text-sm text-slate-600 mb-4">Thay vì hỏi Leader, nhân viên tra cứu nhanh các lỗi thường gặp.</p>
+                            <div class="bg-slate-100 p-2 rounded">
+                                <div class="text-xs font-mono text-slate-500 mb-1">Search: "Lỗi đăng nhập"</div>
+                                <div class="bg-white p-2 text-xs border border-slate-200 rounded mb-1">✅ Cách xử lý lỗi 403 (Đã duyệt)</div>
+                                <div class="bg-white p-2 text-xs border border-slate-200 rounded">✅ Reset password cho User Admin</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 5: CONCLUSION -->
+        <section id="conclusion" class="view-section hidden space-y-8 pb-20">
+            <header class="text-center max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-slate-900">Kết Luận & Kiến Nghị</h2>
+                <div class="w-20 h-1 bg-emerald-500 mx-auto my-4 rounded"></div>
+                <p class="text-slate-600">Tổng kết lại giá trị của đề tài nghiên cứu.</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-800 text-white p-8 rounded-xl text-center shadow-lg hover:bg-slate-700 transition">
+                    <div class="text-4xl mb-4">✨</div>
+                    <h3 class="font-bold text-xl mb-2">Giá Trị Cốt Lõi</h3>
+                    <p class="text-slate-300 text-sm">Đã xây dựng được mô hình tối ưu vận hành giải quyết 3 điểm nghẽn: Công nghệ (Automation), Quy trình (SOP), Con người (Training).</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl border border-slate-200 text-center shadow hover:shadow-md transition">
+                    <div class="text-4xl mb-4">🚧</div>
+                    <h3 class="font-bold text-xl mb-2">Hạn Chế</h3>
+                    <p class="text-slate-600 text-sm">Dữ liệu nghiên cứu dừng lại ở 6 tháng. Cần thời gian triển khai thực tế để đo lường ROI chính xác.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl border border-slate-200 text-center shadow hover:shadow-md transition">
+                    <div class="text-4xl mb-4">🔮</div>
+                    <h3 class="font-bold text-xl mb-2">Hướng Phát Triển</h3>
+                    <p class="text-slate-600 text-sm">Mở rộng sang ứng dụng AI/Chatbot để tự động hóa 100% khâu tiếp nhận (Tier 0 Support).</p>
+                </div>
+            </div>
+
+            <div class="text-center mt-12 text-slate-400 text-sm">
+                <p class="font-semibold text-slate-600 mb-2">Tài Liệu Tham Khảo</p>
+                <p>1. Womack & Jones (1996). Lean Thinking. | 2. Parasuraman (1988). SERVQUAL. | 3. Hammer (1993). BPR.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JS Logic -->
+    <script>
+        // --- Navigation Logic ---
+        function navTo(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            // Show target section
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            // Update Sidebar Active State
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-slate-800', 'border-emerald-500');
+                el.classList.add('border-transparent');
+            });
+            const activeNav = document.getElementById('nav-' + sectionId);
+            if(activeNav) {
+                activeNav.classList.add('bg-slate-800', 'border-emerald-500');
+                activeNav.classList.remove('border-transparent');
+            }
+
+            // Close mobile menu if open
+            document.getElementById('mobile-menu').classList.add('hidden');
+        }
+
+        // --- Chart.js Initialization ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize with Overview
+            navTo('overview');
+            
+            initCharts();
+        });
+
+        function initCharts() {
+            // 1. SLA Trend Chart
+            const ctxSLA = document.getElementById('slaChart').getContext('2d');
+            new Chart(ctxSLA, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'SLA (%)',
+                        data: [82, 81, 79, 78.5, 77.2, 77],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#ef4444',
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            min: 70, 
+                            max: 90,
+                            title: { display: true, text: 'Percentage (%)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // 2. Backlog Chart
+            const ctxBacklog = document.getElementById('backlogChart').getContext('2d');
+            new Chart(ctxBacklog, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'Resolved Tickets',
+                            data: [1200, 1250, 1180, 1220, 1150, 1100],
+                            backgroundColor: '#94a3b8'
+                        },
+                        {
+                            label: 'Backlog (Unresolved)',
+                            data: [50, 65, 90, 120, 150, 180], // Growing backlog
+                            backgroundColor: '#f97316'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true }
+                    }
+                }
+            });
+
+            // 3. Competency Scatter Chart
+            const ctxComp = document.getElementById('competencyChart').getContext('2d');
+            
+            // Mock data representing employees
+            const employees = [];
+            for(let i=0; i<30; i++) {
+                // Low Performers (Low Productivity, Low Quality)
+                if(i < 10) employees.push({x: 30 + Math.random()*20, y: 60 + Math.random()*20, type: 'Low'});
+                // High Performers (High Productivity, High Quality)
+                else if(i > 20) employees.push({x: 80 + Math.random()*15, y: 90 + Math.random()*10, type: 'High'});
+                // Average
+                else employees.push({x: 50 + Math.random()*30, y: 80 + Math.random()*15, type: 'Avg'});
+            }
+
+            new Chart(ctxComp, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Nhân Sự',
+                        data: employees,
+                        backgroundColor: (ctx) => {
+                            const val = ctx.raw;
+                            if(!val) return '#cbd5e1';
+                            if(val.x > 75 && val.y > 85) return '#059669'; // Emerald
+                            if(val.x < 50) return '#ef4444'; // Red
+                            return '#eab308'; // Yellow
+                        },
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'Productivity Score' },
+                            min: 0, max: 100 
+                        },
+                        y: { 
+                            title: { display: true, text: 'Quality Score (QA)' },
+                            min: 50, max: 100 
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `Prod: ${ctx.raw.x.toFixed(0)}, QA: ${ctx.raw.y.toFixed(0)}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Interaction Logic ---
+        
+        // Process Map Interactions
+        const painPoints = {
+            'receive': {
+                title: "Tiếp Nhận Thủ Công",
+                desc: "Nhân viên phải copy-paste thông tin từ Email vào Excel. Dễ sai sót nhập liệu.",
+                impact: "Mất 5-10 phút/ticket, Sai thông tin khách hàng."
+            },
+            'triage': {
+                title: "Phụ Thuộc Team Leader",
+                desc: "Leader phải vào file Excel lọc và tag tên thủ công. Nếu Leader bận họp, ticket nằm chờ vô thời hạn.",
+                impact: "Tăng thời gian chờ (Latency), Miss SLA ngay từ đầu."
+            },
+            'process': {
+                title: "Thiếu Công Cụ Hỗ Trợ",
+                desc: "Agent làm việc dựa trên trí nhớ, không có Checklist. Thường xuyên phải chat Zalo hỏi lại quy trình.",
+                impact: "Tỷ lệ lỗi cao (9.35%), Chất lượng không đồng đều."
+            },
+            'report': {
+                title: "Báo Cáo 'Chết' (Static)",
+                desc: "Cuối ngày Admin mới tải file về làm báo cáo. Quản lý không biết sự cố cho đến khi quá muộn.",
+                impact: "Quản lý bị động (Reactive), Khách hàng khiếu nại mới biết."
+            }
+        };
+
+        function showPainPoint(step) {
+            // Reset Styles
+            document.querySelectorAll('.step-card').forEach(el => el.classList.remove('step-active'));
+            // Highlight clicked
+            event.currentTarget.classList.add('step-active');
+            
+            // Show Detail
+            const data = painPoints[step];
+            document.getElementById('pp-title').innerText = data.title;
+            document.getElementById('pp-desc').innerText = data.desc;
+            document.getElementById('pp-impact').innerText = data.impact;
+            
+            const detailBox = document.getElementById('pain-point-detail');
+            detailBox.classList.remove('hidden');
+        }
+
+        // Solution Tabs Logic
+        function switchSolTab(tabId) {
+            // Hide contents
+            document.querySelectorAll('.sol-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active', 'border-blue-600', 'text-blue-600', 'font-bold'));
+            const btn = document.getElementById('tab-' + tabId);
+            btn.classList.add('active', 'border-blue-600', 'text-blue-600', 'font-bold');
+        }
+
+        // Simulation Logic
+        function simulateTriage() {
+            const input = document.getElementById('ticket-input').value.toLowerCase();
+            const resultBox = document.getElementById('triage-result');
+            const teamDisplay = document.getElementById('assigned-team');
+            const slaAlert = document.getElementById('sla-alert');
+            
+            if(!input) return alert("Vui lòng nhập nội dung ticket!");
+
+            resultBox.classList.remove('hidden');
+            
+            // Simple Keyword Logic
+            if(input.includes('lỗi') || input.includes('bug') || input.includes('hỏng')) {
+                teamDisplay.innerText = "🛠️ Tech Team";
+                teamDisplay.className = "text-xl font-bold text-blue-600 mt-1";
+            } else if (input.includes('gấp') || input.includes('khẩn') || input.includes('vip')) {
+                teamDisplay.innerText = "⭐ VIP Support (Leader)";
+                teamDisplay.className = "text-xl font-bold text-red-600 mt-1";
+                slaAlert.innerText = "⚡ High Priority Alert Sent";
+                slaAlert.className = "mt-2 text-xs font-semibold px-2 py-1 rounded inline-block bg-red-100 text-red-700";
+                return;
+            } else {
+                teamDisplay.innerText = "🎧 General CS Team";
+                teamDisplay.className = "text-xl font-bold text-slate-800 mt-1";
+            }
+            
+            slaAlert.innerText = "Standard SLA Applied";
+            slaAlert.className = "mt-2 text-xs font-semibold px-2 py-1 rounded inline-block bg-green-100 text-green-700";
+        }
+    </script>
+</body>
+</html>
